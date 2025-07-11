@@ -1,10 +1,11 @@
 import pygame
-from os import walk
+from os import walk, path, makedirs
 from playbutton import PlayButton
 from forwardbutton import ForwardButton
 from previousbutton import PreviousButton
 from simple_waveform import SimpleWaveform
 
+# Initializing Pygame, doing all the same old boring stuff
 pygame.init()
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 415, 515
@@ -46,14 +47,27 @@ playing = {"song": "No song playing....."}
 played = []
 paused = {"value": True}
 
+# Checks
+if not path.isdir("music"):
+    makedirs("music")
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+        text1 = font.render("No music found!", True, (255, 255, 255))
+        text2 = font.render("I have made a music folder.", True, (255, 255, 255))
+        text3 = font.render("Please add audio files in it.", True, (255, 255, 255))
+        screen.blit(text1, (0, 0))
+        screen.blit(text2, (0, 25))
+        screen.blit(text3, (0, 50))
+        pygame.display.update()
+
+
 for dirpath, dirnames, filenames in walk("music"):
     queue.append(filenames)
     break
-
-# Load all the songs before starting the application. (Don't think this works..)
-# for song in queue[0]:
-#     pygame.mixer.music.load(f"music/{song}")
-
 
 def play_music(song):
     pygame.mixer.music.load(song)
@@ -109,7 +123,7 @@ forward_button = ForwardButton(
     play_music,
     played,
     paused,
-    playing
+    playing,
 )
 
 previous_button = PreviousButton(
@@ -120,11 +134,12 @@ previous_button = PreviousButton(
     play_music,
     played,
     paused,
-    playing
+    playing,
 )
 
 # Create simple waveform visualizer
 waveform = SimpleWaveform(20, 50, SCREEN_WIDTH - 40, 200, num_points=80)
+
 
 def render_scaled_text(text, font_path, max_width, color, initial_size=20, min_size=10):
     size = initial_size
@@ -136,6 +151,7 @@ def render_scaled_text(text, font_path, max_width, color, initial_size=20, min_s
         size -= 1
     # If it never fits, return the smallest size
     return font.render(text, True, color)
+
 
 # Game Loop
 while True:
@@ -150,11 +166,11 @@ while True:
 
     clock.tick(60)
     screen.fill((200, 182, 255))
-    
+
     # Update and draw the simple waveform
     waveform.update()
     waveform.draw(screen)
-    
+
     app_title = font.render("Pixel Player", True, (255, 255, 255))
     song_title = render_scaled_text(
         playing["song"][0:-4],
@@ -162,7 +178,7 @@ while True:
         SCREEN_WIDTH - 40,  # 20px padding on each side
         (255, 255, 255),
         initial_size=20,
-        min_size=10
+        min_size=10,
     )
     screen.blit(app_title, (110, 10))
     screen.blit(song_title, (20, 300))
